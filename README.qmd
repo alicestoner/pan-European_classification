@@ -1,0 +1,281 @@
+---
+title: "learning FAMD classification in R"
+author: Alice Stoner
+format: gfm
+---
+
+library("FactoMineR") library("factoextra")
+
+Introduction
+
+Tutorial
+
+------------------------------------------------------------------------
+
+```{r}
+#Tutorial
+#Kassambara, A. (n.d.). Factor analysis of mixed data (FAMD) in R: Compute, visualize and interpret. Datanovia. Retrieved November 5, 2026, from https://www.datanovia.com/learn/machine-learning/dimension-reduction/factor-analysis-of-mixed-data
+#I could not find an archaeological article that uses FAMD so I found one that uses MCA instead because that's something I'm also interested in using if FAMD does not work. 
+#Gennai, J., Falcucci, A., Niochet, V., Peresani, M., Richter, J., & Soressi, M. (2025). Tracking the emergence of the Upper Palaeolithic in western Asia and Europe: A multiple correspondence analysis of Protoaurignacian and Southern Ahmarian lithics. PLOS ONE, 20(9), Article e0331393. https://doi.org/10.1371/journal.pone.0331393
+#This journal article uses MCA analysis to examine patterns between technological traits in toolsets from Protoaurignacian and Southern Ahmarian assemblages across Western Asia and Europe. They use attributes like site, technocomplex, and various measurements for shape as their variables for their analysis to determine whether clusters occur randomly or not. They find that Southern Ahmarian and Protoaurignacian toolsets share traits meaning there may have been ties between Europe and Southwest Asia at this time.
+
+
+#install FactoMineR and factoextra
+library("FactoMineR")
+library("factoextra")
+```
+
+```{r}
+#add the data 
+library("FactoMineR")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+head(df[, 1:7], 4)
+```
+
+```{r}
+# add the data
+library("FactoMineR")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+str(df)
+```
+
+```{r}
+#running FAMD
+#list holding the eigenvalues
+library("FactoMineR")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+
+res.famd <- FAMD(df, graph = FALSE)
+```
+
+```{r}
+# running FAMD
+library("FactoMineR")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+print(res.famd)
+```
+
+```{r}
+#How many dimensions are worth reading?
+#first two axes together contain 61% of the data which is enough to make it meaningful
+library("FactoMineR")
+library("factoextra")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+
+eig.val <- get_eigenvalue(res.famd)
+head(eig.val)
+```
+
+```{r}
+#get a scree plot
+library("FactoMineR")
+library("factoextra")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+
+fviz_screeplot(res.famd, addlabels = TRUE, ylim = c(0, 50),
+               barfill = "#3a86d4", barcolor = "#3a86d4")
+```
+
+```{r}
+#get a list with the coordinates, cos2, and contributions of all variables
+library("FactoMineR")
+library("factoextra")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+
+var <- get_famd_var(res.famd)
+
+# Contribution (%) of each variable to the first two dimensions
+round(var$contrib[, 1:2], 2)
+
+```
+
+```{r}
+#plot the variable on one map
+library("FactoMineR")
+library("factoextra")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+
+fviz_famd_var(res.famd, repel = TRUE,
+              ggtheme = theme_minimal())
+```
+
+```{r}
+#rate the contributers one dimension at a time
+library("FactoMineR")
+library("factoextra")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+
+# Contribution to dimension 1
+fviz_contrib(res.famd, "var", axes = 1,
+             fill = "#3a86d4", color = "#3a86d4")
+```
+
+```{r}
+#the variables that contribute to Dim1 are Overall.quality and Harmony
+#The variables that contribte to Dim2 are Soil and Acidity
+library("FactoMineR")
+library("factoextra")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+
+# Contribution to dimension 2
+fviz_contrib(res.famd, "var", axes = 2,
+             fill = "#3a86d4", color = "#3a86d4")
+```
+
+```{r}
+# quantitative variables
+library("FactoMineR")
+library("factoextra")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+
+quanti.var <- get_famd_var(res.famd, "quanti.var")
+
+# Coordinates on the correlation circle
+round(quanti.var$coord[, 1:2], 2)
+```
+
+```{r}
+#PCA correlation
+library("FactoMineR")
+library("factoextra")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+
+fviz_famd_var(res.famd, "quanti.var", repel = TRUE,
+              col.var = "black")
+```
+
+```{r}
+#color the arrows by contribution
+library("FactoMineR")
+library("factoextra")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+
+fviz_famd_var(res.famd, "quanti.var", col.var = "contrib",
+              gradient.cols = c("#dbe9f6", "#3a86d4", "#08306b"),
+              repel = TRUE)
+```
+
+```{r}
+#qualitative variables
+library("FactoMineR")
+library("factoextra")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+
+quali.var <- get_famd_var(res.famd, "quali.var")
+
+# Coordinates of the categories
+round(quali.var$coord[, 1:2], 2)
+```
+
+```{r}
+#plot the categories and color by contribution
+library("FactoMineR")
+library("factoextra")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+
+fviz_famd_var(res.famd, "quali.var", col.var = "contrib",
+              gradient.cols = c("#dbe9f6", "#3a86d4", "#08306b"))
+```
+
+```{r}
+# graph of individuals
+library("FactoMineR")
+library("factoextra")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+
+fviz_famd_ind(res.famd, col.ind = "cos2",
+              gradient.cols = c("#dbe9f6", "#3a86d4", "#08306b"),
+              repel = TRUE)
+```
+
+```{r}
+#color individuals by group
+#this is the most important figuer which shows the clusters of wine types. This plot shows that there are similarities between all of the wine flavor profiles.
+library("FactoMineR")
+library("factoextra")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+
+fviz_famd_ind(res.famd,
+              habillage = "Label",          # colour by groups
+              palette = "jco",              # colourblind-safe journal palette
+              addEllipses = TRUE, ellipse.type = "confidence",
+              repel = TRUE)
+```
+
+```{r}
+#Compare several grouping variables at once
+library("FactoMineR")
+library("factoextra")
+data(wine)
+df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+res.famd <- FAMD(df, graph = FALSE)
+
+fviz_ellipses(res.famd, c("Label", "Soil"), repel = TRUE)
+```
+
+```{r}
+# how this method works
+# we put in the data of the 21 wines. Ths includes two categorical columns and six numeric columns 
+# what comes out is clusters of wine type. The axes show which variables are in each wine type. The circular areas show where these wines are similar. 
+#this uses unsupervised learning. It finds similarities and clusters with no predefined labels.
+#the tutorial does not use anything to check for correctness. I will be using network analysis after my FAMD to compare.
+```
+
+## My data
+```
+
+```{r}
+# read my data 
+library(tidyverse)
+
+lithics <- read_csv("data/outlines_AR_fac_artefactnames_w_metric_measures.csv")
+
+```
+
+```{r}
+glimpse(lithics)
+
+#there are 3512 rows and 26 columns. Each row represents one artifact. In the tutorial, they used all of the columns in their analysis. For the continuous data I would use toolclass in my project as label is used in the tutorial, and knapping direction as soil. I would also add the continuous column for region. For numeric data I would use length, width, area, perimeter, circularity, ecentricityeigen to replace the numeric data they used in the tutorial. 
+```
+
+## What would change for my archaeological data?
+##I would need to clean up the data before I can use it. I would need to filter the columns so that I only use the ones I need. There may be no correlation between the data which would mean this method is not the best idea. I may need to use a method that only examines continuous or numeric data. Without machine learning, archaeologists might use gis to answer this question. You could map each artifact on an gis map and filter the points between age/type/location to visualize what movement might have looked like.   
+
+
+##Bibliography
+
+#Gennai, J., Falcucci, A., Niochet, V., Peresani, M., Richter, J., & Soressi, M. (2025). Tracking the emergence of the Upper Palaeolithic in western Asia and Europe: A multiple correspondence analysis of Protoaurignacian and Southern Ahmarian lithics. PLOS ONE, 20(9), Article e0331393. https://doi.org/10.1371/journal.pone.0331393
+
+#Kassambara, A. (n.d.). Factor analysis of mixed data (FAMD) in R: Compute, visualize and interpret. Datanovia. Retrieved November 5, 2026, from https://www.datanovia.com/learn/machine-learning/dimension-reduction/factor-analysis-of-mixed-data
+
