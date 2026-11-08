@@ -1,437 +1,206 @@
-# learning FAMD classification in R
-Alice Stoner
-
-library(“FactoMineR”) library(“factoextra”)
-
-Introduction
-
-Tutorial
-
-------------------------------------------------------------------------
-
-``` r
-#Tutorial
-#Kassambara, A. (n.d.). Factor analysis of mixed data (FAMD) in R: Compute, visualize and interpret. Datanovia. Retrieved November 5, 2026, from https://www.datanovia.com/learn/machine-learning/dimension-reduction/factor-analysis-of-mixed-data
-#I could not find an archaeological article that uses FAMD so I found one that uses MCA instead because that's something I'm also interested in using if FAMD does not work. 
-#Gennai, J., Falcucci, A., Niochet, V., Peresani, M., Richter, J., & Soressi, M. (2025). Tracking the emergence of the Upper Palaeolithic in western Asia and Europe: A multiple correspondence analysis of Protoaurignacian and Southern Ahmarian lithics. PLOS ONE, 20(9), Article e0331393. https://doi.org/10.1371/journal.pone.0331393
-#This journal article uses MCA analysis to examine patterns between technological traits in toolsets from Protoaurignacian and Southern Ahmarian assemblages across Western Asia and Europe. They use attributes like site, technocomplex, and various measurements for shape as their variables for their analysis to determine whether clusters occur randomly or not. They find that Southern Ahmarian and Protoaurignacian toolsets share traits meaning there may have been ties between Europe and Southwest Asia at this time.
+# Pan-European Classificiation
 
 
-#install FactoMineR and factoextra
-library("FactoMineR")
-library("factoextra")
-```
+Hypothesis
 
-    Loading required package: ggplot2
+I used Claude Sonnet 5 to brainstorm ideas for this section. The AI said
+I should not claim “people moved” or “ideas spread”, do not write a null
+that just says “there is no pattern”, do not make it vague, clustering
+is not sufficient evidence, and don’t bundle all artifacts together as
+they might have independently spread.
 
-    Welcome to factoextra!
+Hypothesis: The distribution of lithics (tanged points, Zinken, and
+geometric microliths) across Late Glacial Europe between space and time
+suggests a non-random, directional gradient. This pattern is consistent
+with the claim that tool assemblages were spread via migration rather
+than independent invention. Null Hypothesis: The spatial and temporal
+distribution of lithics (tanged points, Zinken, and geometric
+microliths) across Late Glacial Europe cannot be distinguished from
+random. This is consistent with the idea that tools were independently
+locally invented rather than spreading via migration between sites.
+Alternative explanation:This pattern may also be produced by sampling
+bias. For example, sites sampled more intensively might be overestimated
+while those that were not excavated as intensively might be
+underestimated.
 
-    Want to learn more? See two factoextra-related books at https://www.datanovia.com/library/principal-component-methods
+viariables
 
 ``` r
-#add the data 
-library("FactoMineR")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-head(df[, 1:7], 4)
+# get file path
+getwd()
 ```
 
-              Label Soil Plante Acidity Harmony Intensity Overall.quality
-    2EL      Saumur Env1  2.000   2.107   3.143     2.857           3.393
-    1CHA     Saumur Env1  2.000   2.107   2.964     2.893           3.214
-    1FON Bourgueuil Env1  1.750   2.179   3.143     3.074           3.536
-    1VAU     Chinon Env2  2.304   3.179   2.038     2.462           2.464
+    [1] "C:/Users/John/OneDrive - Pacific Crest Real Estate/Documents/pan-European_classification"
 
 ``` r
-# add the data
-library("FactoMineR")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-str(df)
+list.files()
 ```
 
-    'data.frame':   21 obs. of  8 variables:
-     $ Label          : Factor w/ 3 levels "Saumur","Bourgueuil",..: 1 1 2 3 1 2 2 1 3 1 ...
-     $ Soil           : Factor w/ 4 levels "Reference","Env1",..: 2 2 2 3 1 1 1 2 2 3 ...
-     $ Plante         : num  2 2 1.75 2.3 1.76 ...
-     $ Acidity        : num  2.11 2.11 2.18 3.18 2.57 ...
-     $ Harmony        : num  3.14 2.96 3.14 2.04 3.64 ...
-     $ Intensity      : num  2.86 2.89 3.07 2.46 3.64 ...
-     $ Overall.quality: num  3.39 3.21 3.54 2.46 3.74 ...
-     $ Typical        : num  3.25 3.04 3.18 2.25 3.44 ...
+    [1] "data"                              "lithics_project_session.md"       
+    [3] "pan-European_classification.Rproj" "README.md"                        
+    [5] "README.qmd"                        "README.rmarkdown"                 
+    [7] "README_files"                      "Tutorial.qmd"                     
 
 ``` r
-#running FAMD
-#list holding the eigenvalues
-library("FactoMineR")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-
-res.famd <- FAMD(df, graph = FALSE)
+file.exists("C:\\Users\\John\\oneDrive - Pacific Crest Real Estate\\Documents\\pan-European_classification\\data")
 ```
+
+    [1] TRUE
 
 ``` r
-# running FAMD
-library("FactoMineR")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-print(res.famd)
+normalizePath("C:\\Users\\John\\oneDrive - Pacific Crest Real Estate\\Documents\\pan-European_classification\\data", mustWork = FALSE)
 ```
 
-    *The results are available in the following objects:
-
-      name          description                             
-    1 "$eig"        "eigenvalues and inertia"               
-    2 "$var"        "Results for the variables"             
-    3 "$ind"        "results for the individuals"           
-    4 "$quali.var"  "Results for the qualitative variables" 
-    5 "$quanti.var" "Results for the quantitative variables"
+    [1] "C:\\Users\\John\\OneDrive - Pacific Crest Real Estate\\Documents\\pan-European_classification\\data"
 
 ``` r
-#How many dimensions are worth reading?
-#first two axes together contain 61% of the data which is enough to make it meaningful
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-eig.val <- get_eigenvalue(res.famd)
-head(eig.val)
+# read my data 
+library(dplyr)
 ```
 
-          eigenvalue variance.percent cumulative.variance.percent
-    Dim.1  4.8315174        43.922886                    43.92289
-    Dim.2  1.8568797        16.880724                    60.80361
-    Dim.3  1.5824794        14.386176                    75.18979
-    Dim.4  1.1491200        10.446546                    85.63633
-    Dim.5  0.6518053         5.925503                    91.56183
+    Attaching package: 'dplyr'
+
+    The following objects are masked from 'package:stats':
+
+        filter, lag
+
+    The following objects are masked from 'package:base':
+
+        intersect, setdiff, setequal, union
 
 ``` r
-#get a scree plot
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
+library(readr)
 
-fviz_screeplot(res.famd, addlabels = TRUE, ylim = c(0, 50),
-               barfill = "#3a86d4", barcolor = "#3a86d4")
+lithics <- read.csv("data/outlines_AR_fac_artefactnames_w_metric_measures.csv")
+
+
+lithics %>%
+  select(TaxUnit, Timeslice, Timeslice_range_from, Timeslice_range_to,
+         Region, Site, Long, Lat, ToolClass) %>%
+  slice(1:5)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-7-1.png)
+       TaxUnit Timeslice Timeslice_range_from Timeslice_range_to Region      Site
+    1 LEpigrav       TS1                    1                  1    ASH Esztergom
+    2 LEpigrav       TS1                    1                  1    ASH Esztergom
+    3 LEpigrav       TS1                    1                  1    ASH Esztergom
+    4 LEpigrav       TS1                    1                  1    ASH Esztergom
+    5 LEpigrav       TS1                    1                  1    ASH Esztergom
+          Long     Lat ToolClass
+    1 18.74034 47.7857        AR
+    2 18.74034 47.7857        AR
+    3 18.74034 47.7857        AR
+    4 18.74034 47.7857        AR
+    5 18.74034 47.7857        AR
+
+The key variables I need to test my hypothesis are site, artifact type,
+and timeslice. Testing these threee variable will allow me to analyze
+the time and location of an artifact. The location where the oldest
+artifact of that type is found will tell me where it might have
+originated. The weakest link is region because site will tell us a more
+specific region anyways. I can’t think of any more variables I might
+need, the dataset contains a large amount of information.
+
+A first look without machine learning
 
 ``` r
-#get a list with the coordinates, cos2, and contributions of all variables
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-var <- get_famd_var(res.famd)
-
-# Contribution (%) of each variable to the first two dimensions
-round(var$contrib[, 1:2], 2)
+library(tidyverse)
 ```
-
-                    Dim.1 Dim.2
-    Plante          15.20  3.26
-    Acidity          3.59 26.45
-    Harmony         18.51  1.27
-    Intensity       14.47  7.25
-    Overall.quality 18.87  0.28
-    Typical         16.16  1.46
-    Label            2.07 17.01
-    Soil            11.13 43.02
-
-``` r
-#plot the variable on one map
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_famd_var(res.famd, repel = TRUE,
-              ggtheme = theme_minimal())
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-9-1.png)
-
-``` r
-#rate the contributers one dimension at a time
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-# Contribution to dimension 1
-fviz_contrib(res.famd, "var", axes = 1,
-             fill = "#3a86d4", color = "#3a86d4")
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-10-1.png)
-
-``` r
-#the variables that contribute to Dim1 are Overall.quality and Harmony
-#The variables that contribte to Dim2 are Soil and Acidity
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-# Contribution to dimension 2
-fviz_contrib(res.famd, "var", axes = 2,
-             fill = "#3a86d4", color = "#3a86d4")
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-11-1.png)
-
-``` r
-# quantitative variables
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-quanti.var <- get_famd_var(res.famd, "quanti.var")
-
-# Coordinates on the correlation circle
-round(quanti.var$coord[, 1:2], 2)
-```
-
-                    Dim.1 Dim.2
-    Plante          -0.86  0.25
-    Acidity         -0.42  0.70
-    Harmony          0.95  0.15
-    Intensity        0.84  0.37
-    Overall.quality  0.95  0.07
-    Typical          0.88  0.16
-
-``` r
-#PCA correlation
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_famd_var(res.famd, "quanti.var", repel = TRUE,
-              col.var = "black")
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-13-1.png)
-
-``` r
-#color the arrows by contribution
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_famd_var(res.famd, "quanti.var", col.var = "contrib",
-              gradient.cols = c("#dbe9f6", "#3a86d4", "#08306b"),
-              repel = TRUE)
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-14-1.png)
-
-``` r
-#qualitative variables
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-quali.var <- get_famd_var(res.famd, "quali.var")
-
-# Coordinates of the categories
-round(quali.var$coord[, 1:2], 2)
-```
-
-               Dim.1 Dim.2
-    Saumur      0.08  0.20
-    Bourgueuil  0.73 -1.09
-    Chinon     -1.32  1.08
-    Reference   2.07  0.61
-    Env1       -0.31 -1.69
-    Env2       -1.41  1.21
-    Env4       -2.65  0.77
-
-``` r
-#plot the categories and color by contribution
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_famd_var(res.famd, "quali.var", col.var = "contrib",
-              gradient.cols = c("#dbe9f6", "#3a86d4", "#08306b"))
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-16-1.png)
-
-``` r
-# graph of individuals
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_famd_ind(res.famd, col.ind = "cos2",
-              gradient.cols = c("#dbe9f6", "#3a86d4", "#08306b"),
-              repel = TRUE)
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-17-1.png)
-
-``` r
-#color individuals by group
-#this is the most important figuer which shows the clusters of wine types. This plot shows that there are similarities between all of the wine flavor profiles.
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_famd_ind(res.famd,
-              habillage = "Label",          # colour by groups
-              palette = "jco",              # colourblind-safe journal palette
-              addEllipses = TRUE, ellipse.type = "confidence",
-              repel = TRUE)
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-18-1.png)
-
-``` r
-#Compare several grouping variables at once
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_ellipses(res.famd, c("Label", "Soil"), repel = TRUE)
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-19-1.png)
-
-``` r
-# how this method works
-# we put in the data of the 21 wines. Ths includes two categorical columns and six numeric columns 
-# what comes out is clusters of wine type. The axes show which variables are in each wine type. The circular areas show where these wines are similar. 
-#this uses unsupervised learning. It finds similarities and clusters with no predefined labels.
-#the tutorial does not use anything to check for correctness. I will be using network analysis after my FAMD to compare.
-```
-
-## My data
-
-    ::: {.cell}
-
-    ```{.r .cell-code}
-    # read my data 
-    library(tidyverse)
-
-<div class="cell-output cell-output-stderr">
 
     ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-    ✔ dplyr     1.2.1     ✔ readr     2.2.0
     ✔ forcats   1.0.1     ✔ stringr   1.6.0
-    ✔ lubridate 1.9.5     ✔ tibble    3.3.1
-    ✔ purrr     1.2.2     ✔ tidyr     1.3.2
+    ✔ ggplot2   4.0.3     ✔ tibble    3.3.1
+    ✔ lubridate 1.9.5     ✔ tidyr     1.3.2
+    ✔ purrr     1.2.2     
     ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
     ✖ dplyr::filter() masks stats::filter()
     ✖ dplyr::lag()    masks stats::lag()
     ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 
-</div>
-
 ``` r
-lithics <- read_csv("data/outlines_AR_fac_artefactnames_w_metric_measures.csv")
+unique(lithics$ToolClass)
 ```
 
-<div class="cell-output cell-output-stderr">
-
-    New names:
-    Rows: 3512 Columns: 26
-    ── Column specification
-    ──────────────────────────────────────────────────────── Delimiter: "," chr
-    (9): Timeslice, TaxUnit, Region, Site, ShortImageRef, ToolClass, Knappi... dbl
-    (17): ...1, SCALE, Timeslice_range_from, Timeslice_range_to, Long, Lat, ...
-    ℹ Use `spec()` to retrieve the full column specification for this data. ℹ
-    Specify the column types or set `show_col_types = FALSE` to quiet this message.
-    • `` -> `...1`
-
-</div>
-
-:::
+    [1] "AR" "D" 
 
 ``` r
-glimpse(lithics)
+unique(lithics$TaxUnit)
 ```
 
-    Rows: 3,512
-    Columns: 26
-    $ ...1                 <dbl> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15…
-    $ Timeslice            <chr> "TS1", "TS1", "TS1", "TS1", "TS1", "TS1", "TS1", …
-    $ TaxUnit              <chr> "LEpigrav", "LEpigrav", "LEpigrav", "LEpigrav", "…
-    $ Region               <chr> "ASH", "ASH", "ASH", "ASH", "ASH", "ASH", "ASH", …
-    $ Site                 <chr> "Esztergom", "Esztergom", "Esztergom", "Esztergom…
-    $ ShortImageRef        <chr> "Lengyel20082009", "Lengyel20082009", "Lengyel200…
-    $ ToolClass            <chr> "AR", "AR", "AR", "AR", "AR", "AR", "AR", "AR", "…
-    $ KnappingDirection    <chr> "D", "D", "D", "D", "D", "D", "D", NA, NA, NA, NA…
-    $ IMAGE                <chr> "TS0_LEpigrav_ASH_Esztergom_Lengyel20082009_AR_d_…
-    $ ARTEFACTNAME         <chr> "TS0_LEpigrav_ASH_Esztergom_Lengyel20082009_AR_d_…
-    $ SCALE                <dbl> 0.013158, 0.013966, 0.013966, 0.013966, 0.013966,…
-    $ Timeslice_range_from <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
-    $ Timeslice_range_to   <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
-    $ Long                 <dbl> 18.74034, 18.74034, 18.74034, 18.74034, 18.74034,…
-    $ Lat                  <dbl> 47.78570, 47.78570, 47.78570, 47.78570, 47.78570,…
-    $ length_cm            <dbl> 11.42, 6.23, 6.36, 5.53, 3.96, 2.51, 2.23, 6.70, …
-    $ width_cm             <dbl> 2.36, 1.56, 1.15, 1.64, 0.87, 1.11, 0.83, 1.47, 1…
-    $ area_cm2             <dbl> 15.94, 6.88, 5.86, 7.25, 2.11, 2.32, 1.47, 7.41, …
-    $ perimeter_cm         <dbl> 24.25, 13.54, 13.84, 12.71, 8.60, 6.40, 5.54, 14.…
-    $ calliper_cm          <dbl> 11.42, 6.23, 6.36, 5.53, 3.96, 2.52, 2.23, 6.71, …
-    $ circularity          <dbl> 2.00, 2.32, 2.08, 2.51, 2.03, 3.27, 2.83, 2.23, 2…
-    $ eccentricityeigen    <dbl> 0.05, 0.09, 0.06, 0.13, 0.05, 0.26, 0.19, 0.08, 0…
-    $ AD                   <dbl> 0.16830547, 0.51472308, 0.42222367, 0.21128294, 0…
-    $ BC                   <dbl> 2.132538, 2.119546, 2.025461, 2.183477, 2.134433,…
-    $ amp                  <dbl> 2.300844, 2.634269, 2.447684, 2.394760, 2.389796,…
-    $ sym                  <dbl> 0.07314945, 0.19539505, 0.17249924, 0.08822718, 0…
+     [1] "LEpigrav" "AzilTECE" "LPal"     "AzilTSG"  "REpigrav" "Mag"     
+     [7] "Feder"    "EpiAhr"   "ABPFeder" "EpiMag"   "ABPTishn" "Meso"    
+    [13] "FMag"     "UMag"     "EMag"     "PAzil"    "EAzil"    "Sauv"    
+    [19] "LAzil"    "Ham"      "Ahr"      "Brom"     "Swid"     "Bell"    
+    [25] "Hav"      "Magle"    "ESauv"    "Kam"      "Wito"     "Perst"   
+    [31] "Wolk"     "Plu"      "SwidAhr"  "LMagTKE"  "TransMag" "Fuerst"  
+    [37] "Atzen"    "BeurA"    "EMeso"    "ELab"     "LLab"     "Cres"    
+    [43] "HFeder"   "AFeder"   "FBT"     
 
 ``` r
-#there are 3512 rows and 26 columns. Each row represents one artifact. In the tutorial, they used all of the columns in their analysis. For the continuous data I would use toolclass in my project as label is used in the tutorial, and knapping direction as soil. I would also add the continuous column for region. For numeric data I would use length, width, area, perimeter, circularity, ecentricityeigen to replace the numeric data they used in the tutorial. 
+## asked AI to create the code below:
+library(tidyverse)
+
+lithics <- read.csv("data/outlines_AR_fac_artefactnames_w_metric_measures.csv")
+
+lithics_sub <- lithics %>%
+  mutate(Trait = case_when(
+    TaxUnit %in% c("Ahr", "Swid", "Brom") ~ "Tanged points",
+    TaxUnit %in% c("Feder", "ABPFeder", "HFeder", "AFeder") ~ "Zinken",
+    TaxUnit %in% c("Sauv", "ESauv", "Meso", "EMeso", "Magle") ~ "Geometric microliths",
+    TRUE ~ NA_character_
+  )) %>%
+  drop_na(Trait, Long, Lat, Timeslice)
+
+world_map <- map_data("world")
+
+ggplot() +
+  geom_polygon(data = world_map, aes(x = long, y = lat, group = group),
+               fill = "grey95", colour = "grey70") +
+  geom_point(data = lithics_sub, aes(x = Long, y = Lat, color = Timeslice),
+             size = 2, alpha = 0.8) +
+  coord_fixed(xlim = c(-10, 40), ylim = c(35, 60)) +
+  facet_wrap(~ Trait) +
+  scale_color_viridis_d(name = "Time Period") +
+  labs(
+    title = "Spatial-Temporal Distribution of Toolkit Traits Across Late Glacial Europe",
+    subtitle = "Faceted by trait type, coloured by time period",
+    x = "Longitude", y = "Latitude"
+  ) +
+  theme_minimal()
 ```
 
-## What would change for my archaeological data?
+![](README_files/figure-commonmark/unnamed-chunk-4-1.png)
 
-\##I would need to clean up the data before I can use it. I would need
-to filter the columns so that I only use the ones I need. There may be
-no correlation between the data which would mean this method is not the
-best idea. I may need to use a method that only examines continuous or
-numeric data. Without machine learning, archaeologists might use gis to
-answer this question. You could map each artifact on an gis map and
-filter the points between age/type/location to visualize what movement
-might have looked like.
+``` r
+unique(lithics$Timeslice)
+```
 
-\##Bibliography
+    [1] "TS1"  "TS2"  "TS23" "TS24" "TS34" "TS4"  "TS3"  "TS12" "TS13"
 
-\#Gennai, J., Falcucci, A., Niochet, V., Peresani, M., Richter, J., &
-Soressi, M. (2025). Tracking the emergence of the Upper Palaeolithic in
-western Asia and Europe: A multiple correspondence analysis of
-Protoaurignacian and Southern Ahmarian lithics. PLOS ONE, 20(9), Article
-e0331393. https://doi.org/10.1371/journal.pone.0331393
+Figure 1 shows the time period and location distribution of the three
+types of lithics arranged on a map. The timeslices are arranged in 1000
+year intervals between 15-11 ka BP. TS12 means timeslices 1-2 and TS13
+means timesclices 1-3.This figure shows that geometric microliths spread
+the furthest out of all toolkits in TS4. The two TS3 points in spain of
+the geometric microlith graph shows that’s where this tool kit was
+likely invented and then spread from there. It also shows that Zinken
+was most present in TS1, TS2, and TS3 but not in TS4. It also shows a
+pattern of movement to the West because older Zinken tools were found
+near Denmark and then more younger Zinken were found in the UK The
+Tanged points map shows that there were seen in both Denmark and up
+towards Latvia and then seen later in TS4 in between the two. This could
+suggest independent invention of Tanged points tool. To further analyze
+this dataset I can use ML to identify regions where toolkit traits shift
+over time using the length and weight columns. This might tell us wht
+the tool originated like and how it changes as it moves across space.
+This would help us answer the question if tanged points were
+individually invented.
 
-\#Kassambara, A. (n.d.). Factor analysis of mixed data (FAMD) in R:
-Compute, visualize and interpret. Datanovia. Retrieved November 5, 2026,
-from
-https://www.datanovia.com/learn/machine-learning/dimension-reduction/factor-analysis-of-mixed-data
+Predictions My expected output will look like a FAMD factor map or a
+cluster plot. My benchmark will be a null model that randomly relabels
+the timescale for each point, 1,000 times. If my hypothesis is correct,
+the correlation in the benchmark model will be very low while the
+correlation in my model will be higher. If my null hypothesis is correct
+then both the benchmark and my analysis will have a low correlation. If
+my alternative explanation is correct then the benchmark and my analysis
+will show low correlation.

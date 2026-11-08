@@ -1,281 +1,100 @@
 ---
-title: "learning FAMD classification in R"
-author: Alice Stoner
+title: "Pan-European Classificiation"
 format: gfm
 ---
 
-library("FactoMineR") library("factoextra")
+Hypothesis
 
-Introduction
+I used Claude Sonnet 5 to brainstorm ideas for this section. The AI said I should not claim "people moved" or "ideas spread", do not write a null that just says "there is no pattern", do not make it vague, clustering is not sufficient evidence, and don't bundle all artifacts together as they might have independently spread. 
 
-Tutorial
+Hypothesis: The distribution of lithics (tanged points, Zinken, and geometric microliths) across Late Glacial Europe between space and time suggests a non-random, directional gradient. This pattern is consistent with the claim that tool assemblages were spread via migration rather than independent invention. 
+Null Hypothesis: The spatial and temporal distribution of lithics (tanged points, Zinken, and geometric microliths) across Late Glacial Europe cannot be distinguished from random. This is consistent with the idea that tools were independently locally invented rather than spreading via migration between sites. 
+Alternative explanation:This pattern may also be produced by sampling bias. For example, sites sampled more intensively might be overestimated while those that were not excavated as intensively might be underestimated.
 
-------------------------------------------------------------------------
-
-```{r}
-#Tutorial
-#Kassambara, A. (n.d.). Factor analysis of mixed data (FAMD) in R: Compute, visualize and interpret. Datanovia. Retrieved November 5, 2026, from https://www.datanovia.com/learn/machine-learning/dimension-reduction/factor-analysis-of-mixed-data
-#I could not find an archaeological article that uses FAMD so I found one that uses MCA instead because that's something I'm also interested in using if FAMD does not work. 
-#Gennai, J., Falcucci, A., Niochet, V., Peresani, M., Richter, J., & Soressi, M. (2025). Tracking the emergence of the Upper Palaeolithic in western Asia and Europe: A multiple correspondence analysis of Protoaurignacian and Southern Ahmarian lithics. PLOS ONE, 20(9), Article e0331393. https://doi.org/10.1371/journal.pone.0331393
-#This journal article uses MCA analysis to examine patterns between technological traits in toolsets from Protoaurignacian and Southern Ahmarian assemblages across Western Asia and Europe. They use attributes like site, technocomplex, and various measurements for shape as their variables for their analysis to determine whether clusters occur randomly or not. They find that Southern Ahmarian and Protoaurignacian toolsets share traits meaning there may have been ties between Europe and Southwest Asia at this time.
-
-
-#install FactoMineR and factoextra
-library("FactoMineR")
-library("factoextra")
-```
+viariables 
 
 ```{r}
-#add the data 
-library("FactoMineR")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-head(df[, 1:7], 4)
-```
+# get file path
+getwd()
 
-```{r}
-# add the data
-library("FactoMineR")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-str(df)
-```
+list.files()
 
-```{r}
-#running FAMD
-#list holding the eigenvalues
-library("FactoMineR")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
+file.exists("C:\\Users\\John\\oneDrive - Pacific Crest Real Estate\\Documents\\pan-European_classification\\data")
 
-res.famd <- FAMD(df, graph = FALSE)
-```
-
-```{r}
-# running FAMD
-library("FactoMineR")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-print(res.famd)
-```
-
-```{r}
-#How many dimensions are worth reading?
-#first two axes together contain 61% of the data which is enough to make it meaningful
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-eig.val <- get_eigenvalue(res.famd)
-head(eig.val)
-```
-
-```{r}
-#get a scree plot
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_screeplot(res.famd, addlabels = TRUE, ylim = c(0, 50),
-               barfill = "#3a86d4", barcolor = "#3a86d4")
-```
-
-```{r}
-#get a list with the coordinates, cos2, and contributions of all variables
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-var <- get_famd_var(res.famd)
-
-# Contribution (%) of each variable to the first two dimensions
-round(var$contrib[, 1:2], 2)
-
-```
-
-```{r}
-#plot the variable on one map
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_famd_var(res.famd, repel = TRUE,
-              ggtheme = theme_minimal())
-```
-
-```{r}
-#rate the contributers one dimension at a time
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-# Contribution to dimension 1
-fviz_contrib(res.famd, "var", axes = 1,
-             fill = "#3a86d4", color = "#3a86d4")
-```
-
-```{r}
-#the variables that contribute to Dim1 are Overall.quality and Harmony
-#The variables that contribte to Dim2 are Soil and Acidity
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-# Contribution to dimension 2
-fviz_contrib(res.famd, "var", axes = 2,
-             fill = "#3a86d4", color = "#3a86d4")
-```
-
-```{r}
-# quantitative variables
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-quanti.var <- get_famd_var(res.famd, "quanti.var")
-
-# Coordinates on the correlation circle
-round(quanti.var$coord[, 1:2], 2)
-```
-
-```{r}
-#PCA correlation
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_famd_var(res.famd, "quanti.var", repel = TRUE,
-              col.var = "black")
-```
-
-```{r}
-#color the arrows by contribution
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_famd_var(res.famd, "quanti.var", col.var = "contrib",
-              gradient.cols = c("#dbe9f6", "#3a86d4", "#08306b"),
-              repel = TRUE)
-```
-
-```{r}
-#qualitative variables
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-quali.var <- get_famd_var(res.famd, "quali.var")
-
-# Coordinates of the categories
-round(quali.var$coord[, 1:2], 2)
-```
-
-```{r}
-#plot the categories and color by contribution
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_famd_var(res.famd, "quali.var", col.var = "contrib",
-              gradient.cols = c("#dbe9f6", "#3a86d4", "#08306b"))
-```
-
-```{r}
-# graph of individuals
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_famd_ind(res.famd, col.ind = "cos2",
-              gradient.cols = c("#dbe9f6", "#3a86d4", "#08306b"),
-              repel = TRUE)
-```
-
-```{r}
-#color individuals by group
-#this is the most important figuer which shows the clusters of wine types. This plot shows that there are similarities between all of the wine flavor profiles.
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_famd_ind(res.famd,
-              habillage = "Label",          # colour by groups
-              palette = "jco",              # colourblind-safe journal palette
-              addEllipses = TRUE, ellipse.type = "confidence",
-              repel = TRUE)
-```
-
-```{r}
-#Compare several grouping variables at once
-library("FactoMineR")
-library("factoextra")
-data(wine)
-df <- wine[, c(1, 2, 16, 22, 29, 28, 30, 31)]
-res.famd <- FAMD(df, graph = FALSE)
-
-fviz_ellipses(res.famd, c("Label", "Soil"), repel = TRUE)
-```
-
-```{r}
-# how this method works
-# we put in the data of the 21 wines. Ths includes two categorical columns and six numeric columns 
-# what comes out is clusters of wine type. The axes show which variables are in each wine type. The circular areas show where these wines are similar. 
-#this uses unsupervised learning. It finds similarities and clusters with no predefined labels.
-#the tutorial does not use anything to check for correctness. I will be using network analysis after my FAMD to compare.
-```
-
-## My data
+normalizePath("C:\\Users\\John\\oneDrive - Pacific Crest Real Estate\\Documents\\pan-European_classification\\data", mustWork = FALSE)
 ```
 
 ```{r}
 # read my data 
+library(dplyr)
+library(readr)
+
+lithics <- read.csv("data/outlines_AR_fac_artefactnames_w_metric_measures.csv")
+
+
+lithics %>%
+  select(TaxUnit, Timeslice, Timeslice_range_from, Timeslice_range_to,
+         Region, Site, Long, Lat, ToolClass) %>%
+  slice(1:5)
+```
+
+The key variables I need to test my hypothesis are site, artifact type, and timeslice. Testing these threee variable will allow me to analyze the time and location of an artifact. The location where the oldest artifact of that type is found will tell me where it might have originated. The weakest link is region because site will tell us a more specific region anyways. I can't think of any more variables I might need, the dataset contains a large amount of information. 
+
+A first look without machine learning
+
+```{r}
 library(tidyverse)
 
-lithics <- read_csv("data/outlines_AR_fac_artefactnames_w_metric_measures.csv")
+unique(lithics$ToolClass)
+
+unique(lithics$TaxUnit)
+
+```
+
+
+```{r}
+## asked AI to create the code below:
+library(tidyverse)
+
+lithics <- read.csv("data/outlines_AR_fac_artefactnames_w_metric_measures.csv")
+
+lithics_sub <- lithics %>%
+  mutate(Trait = case_when(
+    TaxUnit %in% c("Ahr", "Swid", "Brom") ~ "Tanged points",
+    TaxUnit %in% c("Feder", "ABPFeder", "HFeder", "AFeder") ~ "Zinken",
+    TaxUnit %in% c("Sauv", "ESauv", "Meso", "EMeso", "Magle") ~ "Geometric microliths",
+    TRUE ~ NA_character_
+  )) %>%
+  drop_na(Trait, Long, Lat, Timeslice)
+
+world_map <- map_data("world")
+
+ggplot() +
+  geom_polygon(data = world_map, aes(x = long, y = lat, group = group),
+               fill = "grey95", colour = "grey70") +
+  geom_point(data = lithics_sub, aes(x = Long, y = Lat, color = Timeslice),
+             size = 2, alpha = 0.8) +
+  coord_fixed(xlim = c(-10, 40), ylim = c(35, 60)) +
+  facet_wrap(~ Trait) +
+  scale_color_viridis_d(name = "Time Period") +
+  labs(
+    title = "Spatial-Temporal Distribution of Toolkit Traits Across Late Glacial Europe",
+    subtitle = "Faceted by trait type, coloured by time period",
+    x = "Longitude", y = "Latitude"
+  ) +
+  theme_minimal()
+
 
 ```
 
 ```{r}
-glimpse(lithics)
-
-#there are 3512 rows and 26 columns. Each row represents one artifact. In the tutorial, they used all of the columns in their analysis. For the continuous data I would use toolclass in my project as label is used in the tutorial, and knapping direction as soil. I would also add the continuous column for region. For numeric data I would use length, width, area, perimeter, circularity, ecentricityeigen to replace the numeric data they used in the tutorial. 
+unique(lithics$Timeslice)
 ```
 
-## What would change for my archaeological data?
-##I would need to clean up the data before I can use it. I would need to filter the columns so that I only use the ones I need. There may be no correlation between the data which would mean this method is not the best idea. I may need to use a method that only examines continuous or numeric data. Without machine learning, archaeologists might use gis to answer this question. You could map each artifact on an gis map and filter the points between age/type/location to visualize what movement might have looked like.   
+Figure 1 shows the time period and location distribution of the three types of lithics arranged on a map. The timeslices are arranged in 1000 year intervals between 15-11 ka BP. TS12 means timeslices 1-2 and TS13 means timesclices 1-3.This figure shows that geometric microliths spread the furthest out of all toolkits in TS4. The two TS3 points in spain of the geometric microlith graph shows that's where this tool kit was likely invented and then spread from there. It also shows that Zinken was most present in TS1, TS2, and TS3 but not in TS4. It also shows a pattern of movement to the West because older Zinken tools were found near Denmark and then more younger Zinken were found in the UK The Tanged points map shows that there were seen in both Denmark and up towards Latvia and then seen later in TS4 in between the two. This could suggest independent invention of Tanged points tool. To further analyze this dataset I can use ML to identify regions where toolkit traits shift over time using the length and weight columns. This might tell us wht the tool originated like and how it changes as it moves across space. This would help us answer the question if tanged points were individually invented. 
+
+Predictions
+My expected output will look like a FAMD factor map or a cluster plot. My benchmark will be a null model that randomly relabels the timescale for each point, 1,000 times. If my hypothesis is correct, the correlation in the benchmark model will be very low while the correlation in my model will be higher. If my null hypothesis is correct then both the benchmark and my analysis will have a low correlation. If my alternative explanation is correct then the benchmark and my analysis will show low correlation. 
 
 
-##Bibliography
-
-#Gennai, J., Falcucci, A., Niochet, V., Peresani, M., Richter, J., & Soressi, M. (2025). Tracking the emergence of the Upper Palaeolithic in western Asia and Europe: A multiple correspondence analysis of Protoaurignacian and Southern Ahmarian lithics. PLOS ONE, 20(9), Article e0331393. https://doi.org/10.1371/journal.pone.0331393
-
-#Kassambara, A. (n.d.). Factor analysis of mixed data (FAMD) in R: Compute, visualize and interpret. Datanovia. Retrieved November 5, 2026, from https://www.datanovia.com/learn/machine-learning/dimension-reduction/factor-analysis-of-mixed-data
 
